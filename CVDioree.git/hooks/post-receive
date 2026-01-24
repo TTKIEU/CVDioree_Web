@@ -1,3 +1,3 @@
 #!bin/sh
-git --work-tree=/var/www/html --git-dir=/var/repo/Github-Auto-Deploy.git checkout -f
+git --work-tree=/var/www/cvdioree.site/public_html --git-dir=/var/repo/CVDioree.git checkout -f
 
