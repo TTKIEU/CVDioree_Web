@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Echo Test</title>
+<style>
+  body { font-family: sans-serif; margin: 2em; }
+  fieldset { margin-bottom: 1em; }
+  #out { background: #f5f5f5; padding: 1em; border: 1px solid #ccc; }
+  .js-only { display: none; }
+</style>
+</head>
+<body>
+<h2>Echo Test</h2>
+
+<!-- ===== NO-JS FALLBACK FORMS (shown when JS is off) ===== -->
+<noscript>
+<p><em>JavaScript is disabled — use the simple forms below (GET/POST only, form-urlencoded).</em></p>
+
+<fieldset>
+  <legend>Perl Echo (GET)</legend>
+  <form method="GET" action="/cgi-bin/perl-general-echo.pl">
+    <label>Field A: <input name="a" value="1"></label>
+    <label>Field B: <input name="b" value="two"></label>
+    <button type="submit">Send GET</button>
+  </form>
+</fieldset>
+
+<fieldset>
+  <legend>Perl Echo (POST)</legend>
+  <form method="POST" action="/cgi-bin/perl-general-echo.pl">
+    <label>Field A: <input name="a" value="1"></label>
+    <label>Field B: <input name="b" value="two"></label>
+    <button type="submit">Send POST</button>
+  </form>
+</fieldset>
+
+<fieldset>
+  <legend>Go Echo (GET)</legend>
+  <form method="GET" action="/cgi-bin/echo-go-cvdioree">
+    <label>Field A: <input name="a" value="1"></label>
+    <label>Field B: <input name="b" value="two"></label>
+    <button type="submit">Send GET</button>
+  </form>
+</fieldset>
+
+<fieldset>
+  <legend>Go Echo (POST)</legend>
+  <form method="POST" action="/cgi-bin/echo-go-cvdioree">
+    <label>Field A: <input name="a" value="1"></label>
+    <label>Field B: <input name="b" value="two"></label>
+    <button type="submit">Send POST</button>
+  </form>
+</fieldset>
+
+<fieldset>
+  <legend>Python Echo (GET)</legend>
+  <form method="GET" action="/cgi-bin/echo-python-cvdioree.py">
+    <label>Field A: <input name="a" value="1"></label>
+    <label>Field B: <input name="b" value="two"></label>
+    <button type="submit">Send GET</button>
+  </form>
+</fieldset>
+
+<fieldset>
+  <legend>Python Echo (POST)</legend>
+  <form method="POST" action="/cgi-bin/echo-python-cvdioree.py">
+    <label>Field A: <input name="a" value="1"></label>
+    <label>Field B: <input name="b" value="two"></label>
+    <button type="submit">Send POST</button>
+  </form>
+</fieldset>
+</noscript>
+
+</noscript>
+
+<!-- ===== JS-ENABLED FORM (hidden until JS runs) ===== -->
+<div id="jsForm" class="js-only">
+<form id="testForm">
+  <label>Endpoint:
+    <select id="endpoint">
+      <option value="/cgi-bin/perl-general-echo.pl">Perl echo</option>
+      <option value="/cgi-bin/echo-go-cvdioree">Go echo</option>
+      <option value="/cgi-bin/echo-python-cvdioree.py">Python echo</option>
+    </select>
+  </label>
+  <br/>
+
+  <label>Method:
+    <select id="method">
+      <option>GET</option>
+      <option>POST</option>
+      <option>PUT</option>
+      <option>DELETE</option>
+    </select>
+  </label>
+  <br/>
+
+  <label>Encoding:
+    <select id="encoding">
+      <option value="form">application/x-www-form-urlencoded</option>
+      <option value="json">application/json</option>
+    </select>
+  </label>
+  <br/>
+
+  <label>Field A: <input name="a" id="a" value=""></label><br/>
+  <label>Field B: <input name="b" id="b" value=""></label><br/>
+  <button type="submit">Send</button>
+</form>
+
+<h3>Response</h3>
+<pre id="out"></pre>
+</div>
+
+<script>
+// Show JS form, hide noscript content is automatic
+document.getElementById('jsForm').style.display = 'block';
+
+document.getElementById('testForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const endpoint = document.getElementById('endpoint').value;
+  const method = document.getElementById('method').value;
+  const encoding = document.getElementById('encoding').value;
+  const a = document.getElementById('a').value;
+  const b = document.getElementById('b').value;
+  const out = document.getElementById('out');
+
+  let headers = {};
+  let body = null;
+
+  if (method === 'GET') {
+    const url = new URL(window.location.origin + endpoint);
+    url.searchParams.set('a', a);
+    url.searchParams.set('b', b);
+    try {
+      const r = await fetch(url, { method: 'GET' });
+      out.textContent = await r.text();
+    } catch (err) { out.textContent = 'Error: ' + err; }
+    return;
+  }
+
+  if (encoding === 'json') {
+    headers['Content-Type'] = 'application/json';
+    body = JSON.stringify({ a: a, b: b });
+  } else {
+    headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    body = new URLSearchParams({ a: a, b: b }).toString();
+  }
+
+  try {
+    const r = await fetch(endpoint, { method, headers, body });
+    out.textContent = await r.text();
+  } catch (err) {
+    out.textContent = 'Error: ' + err;
+  }
+});
+</script>
+</body>
+</html>
